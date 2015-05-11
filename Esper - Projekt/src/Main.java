@@ -29,6 +29,7 @@ public class Main {
                 "select *" +
                         "from TP"
         );
+        // test
 
         // STARE
 //        administrator.createEPL("create schema Licznik (kursZamkniecia Integer, liczba Integer, blad Integer)");
