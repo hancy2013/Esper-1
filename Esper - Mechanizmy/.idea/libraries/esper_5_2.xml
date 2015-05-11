@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="esper-5.2">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/libs/esper-5.2.0" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="file://$PROJECT_DIR$/libs/esper-5.2.0/esper/doc/api" />
+      <root url="file://$PROJECT_DIR$/libs/esper-5.2.0/esperio/doc/api" />
+    </JAVADOC>
+    <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/libs/esper-5.2.0" recursive="false" />
+  </library>
+</component>

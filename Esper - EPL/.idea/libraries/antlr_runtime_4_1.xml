@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="antlr-runtime-4.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/esper-5.2.0/esper/lib/antlr-runtime-4.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
