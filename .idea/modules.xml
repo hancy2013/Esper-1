@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Esper - EPL/Esper - EPL.iml" filepath="$PROJECT_DIR$/Esper - EPL/Esper - EPL.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Esper - Mechanizmy/Esper - Mechanizmy.iml" filepath="$PROJECT_DIR$/Esper - Mechanizmy/Esper - Mechanizmy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Esper - Podstawy/Esper - Podstawy.iml" filepath="$PROJECT_DIR$/Esper - Podstawy/Esper - Podstawy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Esper - Projekt/Esper - Projekt.iml" filepath="$PROJECT_DIR$/Esper - Projekt/Esper - Projekt.iml" />
+    </modules>
+  </component>
+</project>
