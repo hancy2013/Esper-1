@@ -93,7 +93,7 @@ public class Main {
 //                        "from MDpom"
         );
 
-        administrator.createEPL("create window CCI.std:unique(spolka, data) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL("create window CCI.std:unique(spolka) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into CCI(spolka, wartosc, data) " +
                         "select md.spolka, cast((tp.wartosc - smatp.wartosc)/(0.015 * md.wartosc), float), md.data " +
@@ -106,7 +106,7 @@ public class Main {
 
         EPStatement statement = administrator.createEPL(
                 "select irstream *" +
-                        "from MD"
+                        "from CCI"
         );
 
 
