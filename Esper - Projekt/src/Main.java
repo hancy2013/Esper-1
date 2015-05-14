@@ -45,14 +45,14 @@ public class Main {
 //                        "from KursAkcji.win:length(1) as ka"
 //        );
 
-        administrator.createEPL("create window TPtab.win:ext_timed(data.getTime(), okres days)  (spolka String, wartosc Float, data Date)");
+        administrator.createEPL("create window TPtab.std:groupwin(spolka).win:length(okres)  (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into TPtab(spolka, wartosc, data) " +
                         "select ka.spolka, cast( (ka.kursZamkniecia + ka.wartoscMax + ka.wartoscMin )/3, float), ka.data " +
                         "from KursAkcji.win:length(1) as ka"
         );
 
-        administrator.createEPL("create window TP.win:ext_timed(data.getTime(), 1 days)  (spolka String, wartosc Float, data Date)");
+        administrator.createEPL("create window TP.std:unique(spolka) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into TP(spolka, wartosc, data) " +
                         "select spolka, wartosc, data " +
@@ -60,38 +60,38 @@ public class Main {
                         "limit 1"
         );
 
-        administrator.createEPL("create window SMATP.win:ext_timed(data.getTime(), 1 days)  (spolka String, wartosc Float, data Date)");
+        administrator.createEPL("create window SMATP.std:unique(spolka)  (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into SMATP(spolka, wartosc, data) " +
                         "select spolka, cast(avg(wartosc),float), data " +
                         "from TPtab"
         );
 
-        //administrator.createEPL("create window MDpom.std:unique(spolka).win:ext_timed(data.getTime(), 1 days) (spolka String, wartosc Float, data Date)");
-        administrator.createEPL(
-
-                "insert into MD (spolka, wartosc, data) " +
-                        "select smatp.spolka, sum(Math.abs(smatp.wartosc)), smatp.data " +
-                        "from SMATP as smatp " +
-                        //"inner join TPtab as tp on smatp.spolka = tp.spolka " +
-                        "group by smatp.spolka, smatp.data"
-
-
+//        administrator.createEPL("create window MDpom.std:unique(spolka).win:ext_timed(data.getTime(), 1 days) (spolka String, wartosc Float, data Date)");
+//        administrator.createEPL(
 //                "on SMATP as smatp " +
 //                        "merge TPtab as tp " +
 //                        "where smatp.spolka = tp.spolka " +
 //                        "when matched then " +
 //                        "   insert into MDpom(spolka, wartosc, data) " +
 //                        "       select smatp.spolka, Math.abs(smatp.wartosc - tp.wartosc), smatp.data"
+//
+//        );
 
-        );
+        administrator.createEPL("create window MD.std:unique(spolka) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL(
+        "insert into MD (spolka, wartosc, data) " +
+                "select smatp.spolka, cast( avg(Math.abs(smatp.wartosc - tptab.wartosc)), float), smatp.data " +
+                "from SMATP as smatp unidirectional " +
+                "join TPtab as tptab on smatp.spolka = tptab.spolka " +
+                "group by smatp.spolka, smatp.data"
 
-        administrator.createEPL("create window MD.win:ext_timed(data.getTime(), 1 days) (spolka String, wartosc Float, data Date)");
-//        administrator.createEPL(
+
+
 //                "insert into MD(spolka, wartosc, data) " +
 //                        "select spolka, cast(avg(wartosc), float), data " +
 //                        "from MDpom"
-//        );
+        );
 
         administrator.createEPL("create window CCI.std:unique(spolka, data) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
@@ -105,7 +105,7 @@ public class Main {
 
 
         EPStatement statement = administrator.createEPL(
-                "select istream *" +
+                "select irstream *" +
                         "from MD"
         );
 

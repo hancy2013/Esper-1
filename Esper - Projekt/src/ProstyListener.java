@@ -11,7 +11,7 @@ public class ProstyListener implements UpdateListener {
         }
         if (oldEvents != null) {
             for (int i = 0; i < oldEvents.length; i++) {
-                System.out.println("RSTREAM : " + oldEvents[i].getUnderlying());
+                System.out.println("\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tRSTREAM : " + oldEvents[i].getUnderlying());
             }
         }
     }
