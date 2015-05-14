@@ -67,29 +67,33 @@ public class Main {
                         "from TPtab"
         );
 
-        administrator.createEPL("create window MDpom.std:unique(spolka).win:ext_timed(data.getTime(), 1 days) (spolka String, wartosc Float, data Date)");
+        //administrator.createEPL("create window MDpom.std:unique(spolka).win:ext_timed(data.getTime(), 1 days) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
-//                "insert into MDpom(spolka, wartosc, data) " +
-//                        "select smatp.spolka, (select tp.kurs from TP as tp where tp.spolka = smatp.spolka), smatp.data " +
-//                        "from SMATP as smatp"
-//
-                "on SMATP as smatp " +
-                        "merge TPtab as tp " +
-                        "where smatp.spolka = tp.spolka " +
-                        "when matched then " +
-                        "   insert into MDpom(spolka, wartosc, data) " +
-                        "       select smatp.spolka, Math.abs(smatp.wartosc - tp.wartosc), smatp.data"
+
+                "insert into MD (spolka, wartosc, data) " +
+                        "select smatp.spolka, sum(Math.abs(smatp.wartosc)), smatp.data " +
+                        "from SMATP as smatp " +
+                        //"inner join TPtab as tp on smatp.spolka = tp.spolka " +
+                        "group by smatp.spolka, smatp.data"
+
+
+//                "on SMATP as smatp " +
+//                        "merge TPtab as tp " +
+//                        "where smatp.spolka = tp.spolka " +
+//                        "when matched then " +
+//                        "   insert into MDpom(spolka, wartosc, data) " +
+//                        "       select smatp.spolka, Math.abs(smatp.wartosc - tp.wartosc), smatp.data"
 
         );
 
         administrator.createEPL("create window MD.win:ext_timed(data.getTime(), 1 days) (spolka String, wartosc Float, data Date)");
-        administrator.createEPL(
-                "insert into MD(spolka, wartosc, data) " +
-                        "select spolka, cast(avg(wartosc), float), data " +
-                        "from MDpom"
-        );
+//        administrator.createEPL(
+//                "insert into MD(spolka, wartosc, data) " +
+//                        "select spolka, cast(avg(wartosc), float), data " +
+//                        "from MDpom"
+//        );
 
-        administrator.createEPL("create window CCI.win:ext_timed(data.getTime(), 1 days) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL("create window CCI.std:unique(spolka, data) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into CCI(spolka, wartosc, data) " +
                         "select md.spolka, cast((tp.wartosc - smatp.wartosc)/(0.015 * md.wartosc), float), md.data " +
@@ -98,10 +102,13 @@ public class Main {
                         "join SMATP as smatp on smatp.spolka = md.spolka"
         );
 
+
+
         EPStatement statement = administrator.createEPL(
                 "select istream *" +
                         "from MD"
         );
+
 
         // STARE
 //        administrator.createEPL("create schema Licznik (kursZamkniecia Integer, liczba Integer, blad Integer)");
