@@ -20,7 +20,7 @@ public class InputStream {
 	private static final String DATA_ROZPOCZECIA = "2001-01-01";
 	private static final String DATA_ZAKONCZENIA = "2001-08-01";
 
-	private static final int LICZBA_PLIKOW = 1; // TUTAJ ZMIENIĆ NA 12 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	private static final int LICZBA_PLIKOW = 12; // TUTAJ ZMIENIĆ NA 12 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	private static final int MAX_LICZBA_BLEDOW = 5;
 	private static InformacjeOPliku tablicaInformacjioPlikach[] = new InformacjeOPliku[LICZBA_PLIKOW];
 	private static DateFormat df = null;
@@ -33,28 +33,28 @@ public class InputStream {
 
 		tablicaInformacjioPlikach[0] = this.new InformacjeOPliku(
 				"files/tableAPPLE_NASDAQ.csv", "Apple", "NASDAQ");
-//		tablicaInformacjioPlikach[1] = this.new InformacjeOPliku(
-//				"files/tableCOCACOLA_NYSE.csv", "CocaCola", "NYSE");
-//		tablicaInformacjioPlikach[2] = this.new InformacjeOPliku(
-//				"files/tableDISNEY_NYSE.csv", "Disney", "NYSE");
-//		tablicaInformacjioPlikach[3] = this.new InformacjeOPliku(
-//				"files/tableFORD_NYSE.csv", "Ford", "NYSE");
-//		tablicaInformacjioPlikach[4] = this.new InformacjeOPliku(
-//				"files/tableGOOGLE_NASDAQ.csv", "Google", "NASDAQ");
-//		tablicaInformacjioPlikach[5] = this.new InformacjeOPliku(
-//				"files/tableHONDA_NYSE.csv", "Honda", "NYSE");
-//		tablicaInformacjioPlikach[6] = this.new InformacjeOPliku(
-//				"files/tableIBM_NASDAQ.csv", "IBM", "NASDAQ");
-//		tablicaInformacjioPlikach[7] = this.new InformacjeOPliku(
-//				"files/tableINTEL_NASDAQ.csv", "Intel", "NASDAQ");
-//		tablicaInformacjioPlikach[8] = this.new InformacjeOPliku(
-//				"files/tableMICROSOFT_NASDAQ.csv", "Microsoft", "NASDAQ");
-//		tablicaInformacjioPlikach[9] = this.new InformacjeOPliku(
-//				"files/tableORACLE_NASDAQ.csv", "Oracle", "NASDAQ");
-//		tablicaInformacjioPlikach[10] = this.new InformacjeOPliku(
-//				"files/tablePEPSICO_NYSE.csv", "PepsiCo", "NYSE");
-//		tablicaInformacjioPlikach[11] = this.new InformacjeOPliku(
-//				"files/tableYAHOO_NASDAQ.csv", "Yahoo", "NASDAQ");
+		tablicaInformacjioPlikach[1] = this.new InformacjeOPliku(
+				"files/tableCOCACOLA_NYSE.csv", "CocaCola", "NYSE");
+		tablicaInformacjioPlikach[2] = this.new InformacjeOPliku(
+				"files/tableDISNEY_NYSE.csv", "Disney", "NYSE");
+		tablicaInformacjioPlikach[3] = this.new InformacjeOPliku(
+				"files/tableFORD_NYSE.csv", "Ford", "NYSE");
+		tablicaInformacjioPlikach[4] = this.new InformacjeOPliku(
+				"files/tableGOOGLE_NASDAQ.csv", "Google", "NASDAQ");
+		tablicaInformacjioPlikach[5] = this.new InformacjeOPliku(
+				"files/tableHONDA_NYSE.csv", "Honda", "NYSE");
+		tablicaInformacjioPlikach[6] = this.new InformacjeOPliku(
+				"files/tableIBM_NASDAQ.csv", "IBM", "NASDAQ");
+		tablicaInformacjioPlikach[7] = this.new InformacjeOPliku(
+				"files/tableINTEL_NASDAQ.csv", "Intel", "NASDAQ");
+		tablicaInformacjioPlikach[8] = this.new InformacjeOPliku(
+				"files/tableMICROSOFT_NASDAQ.csv", "Microsoft", "NASDAQ");
+		tablicaInformacjioPlikach[9] = this.new InformacjeOPliku(
+				"files/tableORACLE_NASDAQ.csv", "Oracle", "NASDAQ");
+		tablicaInformacjioPlikach[10] = this.new InformacjeOPliku(
+				"files/tablePEPSICO_NYSE.csv", "PepsiCo", "NYSE");
+		tablicaInformacjioPlikach[11] = this.new InformacjeOPliku(
+				"files/tableYAHOO_NASDAQ.csv", "Yahoo", "NASDAQ");
 
 		ReverseLineReader readers[] = new ReverseLineReader[LICZBA_PLIKOW];
 

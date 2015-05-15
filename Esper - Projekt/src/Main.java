@@ -174,17 +174,28 @@ public class Main {
                         "merge portfel as p " +
                         "where k.spolka = p.spolka " +
                         "when matched then " +
-                        "   update set p.liczba_akcji = 0 " +
+                        "   update set p.liczba_akcji = p.liczba_akcji + cast(p.suma_gotowki/k.kurs, int)," +
+                        "   p.suma_gotowki = p.suma_gotowki - cast((cast(p.suma_gotowki/k.kurs, int))*k.kurs, float) " +
                         "when not matched then " +
                         "   insert into portfel(spolka, data, liczba_akcji, suma_gotowki) " +
-                        "       select k.spolka, k.data, cast(kasaNaStart/k.kurs, int), cast(0, float)"
+                        "       select k.spolka, k.data, cast(kasaNaStart/k.kurs, int), cast(kasaNaStart % k.kurs, float)"
+        );
+
+        administrator.createEPL(
+                "on kupKurs(operacja = cast('-',char)) as k " +
+                        "merge portfel as p " +
+                        "where k.spolka = p.spolka " +
+                        "when matched then " +
+                        "   update set " +
+                        "   p.suma_gotowki = p.suma_gotowki + cast(p.liczba_akcji*k.kurs, float)," +
+                        "   p.liczba_akcji = 0  "
         );
 
 
 
         EPStatement statement = administrator.createEPL(
                 "select irstream *" +
-                        "from kup"
+                        "from portfel"
         );
 
 
