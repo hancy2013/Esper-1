@@ -19,6 +19,7 @@ public class Main {
 
 
         administrator.createEPL("create variable int okres = 14");
+        administrator.createEPL("create variable int kasaNaStart = 1000");
 
 
 //        administrator.createEPL("create window High.std:unique(spolka) (spolka String, wartosc Float)");
@@ -159,6 +160,25 @@ public class Main {
                         "and cciA.wartosc > cciB.wartosc "
         );
 
+        administrator.createEPL("create window kupKurs.win:length(1) (spolka String, data Date, operacja char, kurs Float)");
+        administrator.createEPL(
+                "insert into kupKurs(spolka, data, operacja, kurs) " +
+                        "select k.spolka, k.data, k.operacja, ka.kursZamkniecia " +
+                        "from kup as k " +
+                        "join KursAkcji.win:keepall() as ka on k.spolka = ka.spolka and k.data = ka.data"
+        );
+
+        administrator.createEPL("create window portfel.std:unique(spolka) (spolka String, data Date, liczba_akcji Integer, suma_gotowki float)");
+        administrator.createEPL(
+                "on kupKurs(operacja = cast('+',char)) as k " +
+                        "merge portfel as p " +
+                        "where k.spolka = p.spolka " +
+                        "when matched then " +
+                        "   update set p.liczba_akcji = 0 " +
+                        "when not matched then " +
+                        "   insert into portfel(spolka, data, liczba_akcji, suma_gotowki) " +
+                        "       select k.spolka, k.data, cast(kasaNaStart/k.kurs, int), cast(0, float)"
+        );
 
 
 
