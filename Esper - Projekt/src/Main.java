@@ -93,7 +93,8 @@ public class Main {
 //                        "from MDpom"
         );
 
-        administrator.createEPL("create window CCI.std:unique(spolka) (spolka String, wartosc Float, data Date)");
+        //TODO może dodatkowo długościowe lub czasowe na CCI
+        administrator.createEPL("create window CCI.std:groupwin(spolka).win:keepall() (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into CCI(spolka, wartosc, data) " +
                         "select md.spolka, cast((tp.wartosc - smatp.wartosc)/(0.015 * md.wartosc), float), md.data " +
@@ -102,11 +103,68 @@ public class Main {
                         "join SMATP as smatp on smatp.spolka = md.spolka"
         );
 
+        administrator.createEPL("create window lastThree.std:groupwin(spolka).win:length(3) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL(
+                "insert into lastThree(spolka, wartosc, data) " +
+                        "select ka.spolka, ka.kursZamkniecia, ka.data " +
+                        "from KursAkcji.win:length(1) as ka "
+        );
+
+        administrator.createEPL("create window localMax.std:groupwin(spolka).win:length(2) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL(
+                "insert into localMax(spolka, wartosc, data) " +
+                        "select  b.spolka, b.wartosc, b.data " +
+                        "from lastThree as a " +
+                        "join lastThree as b on a.spolka = b.spolka " +
+                        "join lastThree as c on a.spolka = c.spolka " +
+                        "where a.data.before(b.data) " +
+                        "and b.data.before(c.data) " +
+                        "and a.wartosc < b.wartosc " +
+                        "and c.wartosc <= b.wartosc"
+        );
+
+        administrator.createEPL("create window localMin.std:groupwin(spolka).win:length(2) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL(
+                "insert into localMin(spolka, wartosc, data) " +
+                        "select  b.spolka, b.wartosc, b.data " +
+                        "from lastThree as a " +
+                        "join lastThree as b on a.spolka = b.spolka " +
+                        "join lastThree as c on a.spolka = c.spolka " +
+                        "where a.data.before(b.data) " +
+                        "and b.data.before(c.data) " +
+                        "and a.wartosc >= b.wartosc " +
+                        "and c.wartosc > b.wartosc"
+        );
+
+        //TODO jak wywalimy distinct to się generuje milion wpisów
+        administrator.createEPL("create window kup.win:length(1) (spolka String, data Date, operacja char)");
+        administrator.createEPL(
+                "insert into kup(spolka, data, operacja) " +
+                        "select distinct  maxB.spolka, maxB.data, cast('-',char) " +
+                        "from localMax as maxA unidirectional " +
+                        "join localMax as maxB on maxA.spolka = maxB.spolka " +
+                        "join CCI as cciA on cciA.spolka = maxA.spolka and cciA.data = maxA.data " +
+                        "join CCI as cciB on cciB.spolka = maxB.spolka and cciB.data = maxB.data " +
+                        "where maxA.wartosc < maxB.wartosc " +
+                        "and cciA.wartosc > cciB.wartosc "
+        );
+        administrator.createEPL(
+                "insert into kup(spolka, data, operacja) " +
+                        "select distinct  minB.spolka, minB.data, cast('+',char) " +
+                        "from localMin as minA unidirectional " +
+                        "join localMin as minB on minA.spolka = minB.spolka " +
+                        "join CCI as cciA on cciA.spolka = minA.spolka and cciA.data = minA.data " +
+                        "join CCI as cciB on cciB.spolka = minB.spolka and cciB.data = minB.data " +
+                        "where minA.wartosc < minB.wartosc " +
+                        "and cciA.wartosc > cciB.wartosc "
+        );
+
+
 
 
         EPStatement statement = administrator.createEPL(
                 "select irstream *" +
-                        "from CCI"
+                        "from kup"
         );
 
 
