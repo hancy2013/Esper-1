@@ -4,6 +4,8 @@ import com.espertech.esper.client.EPServiceProviderManager;
 import com.espertech.esper.client.EPStatement;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 
 public class Main {
 
@@ -95,7 +97,7 @@ public class Main {
         );
 
         //TODO może dodatkowo długościowe lub czasowe na CCI
-        administrator.createEPL("create window CCI.std:groupwin(spolka).win:keepall() (spolka String, wartosc Float, data Date)");
+        administrator.createEPL("create window CCI.std:groupwin(spolka).win:length(30) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into CCI(spolka, wartosc, data) " +
                         "select md.spolka, cast((tp.wartosc - smatp.wartosc)/(0.015 * md.wartosc), float), md.data " +
@@ -192,50 +194,21 @@ public class Main {
         );
 
 
+//        EPStatement statement = administrator.createEPL(
+//                "select irstream * " +
+//                        "from kup"
+//        );
+
+//        EPStatement statement = administrator.createEPL(
+//                "select k.spolka, k.data, k.suma_gotowki, k.liczba_akcji " +
+//                        "from portfel as k"
+//        );
 
         EPStatement statement = administrator.createEPL(
-                "select irstream *" +
-                        "from portfel"
+                "select ka.data, ka.spolka, ka.kursZamkniecia, k.suma_gotowki, k.liczba_akcji, (ka.kursZamkniecia*k.liczba_akcji+k.suma_gotowki) as SUMA " +
+                        "from KursAkcji(Main.sprawdz(data, 2010, 11, 31)) as ka unidirectional " +
+                        "join portfel as k on k.spolka = ka.spolka"
         );
-
-
-        // STARE
-//        administrator.createEPL("create schema Licznik (kursZamkniecia Integer, liczba Integer, blad Integer)");
-//        administrator.createEPL("create variable int wielkoscOkna = 50");
-//        administrator.createEPL("create window Top50.ext:sort(wielkoscOkna, liczba desc, blad asc) as Licznik");
-//        administrator.createEPL("create variable int rok = 1");
-//        administrator.createEPL("create variable Integer liczbaX = 0");
-//
-//        administrator.createEPL(
-//                "on KursAkcji as ka " +
-//                        "merge Top50 as top " +
-//                        "where cast(ka.kursZamkniecia, int) = top.kursZamkniecia " +
-//                        "when matched then " +
-//                        "   update set top.liczba = top.liczba + 1 " +
-//                        "when not matched then " +
-//                        "   insert into Top50(kursZamkniecia, liczba, blad) " +
-//                        "       select cast(ka.kursZamkniecia, int), liczbaX+1, liczbaX "
-//        );
-//
-//        administrator.createEPL(
-//                "on Top50((select count(*) from Top50) = wielkoscOkna) " +
-//                        "set liczbaX = (select min(liczba) from Top50) "
-//        );
-//
-//
-//
-//        administrator.createEPL(
-//                "on KursAkcji as ka " +
-//                        "set rok = ka.data.getYear()"
-//        );
-//
-//        EPStatement statement = administrator.createEPL(
-//                "on KursAkcji(data.getYear() > rok) " +
-//                        "select rok+1 as rok, top.kursZamkniecia as co, top.liczba as ile, top.blad as blad" +
-//                        "   from Top50 as top" +
-//                        "   limit 1"
-//        );
-        //STARE
 
 
         ProstyListener listener = new ProstyListener();
@@ -246,4 +219,9 @@ public class Main {
 
     }
 
+    public static boolean sprawdz(Date date, int y, int m, int d) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        return cal.get(Calendar.DAY_OF_MONTH)==d; // && cal.get(Calendar.YEAR)==y && cal.get(Calendar.MONTH)==m;
+    }
 }
