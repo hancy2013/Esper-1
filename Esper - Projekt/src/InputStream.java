@@ -35,8 +35,8 @@ public class InputStream {
 //				"files/tableAPPLE_NASDAQ.csv", "Apple", "NASDAQ");
 //		tablicaInformacjioPlikach[1] = this.new InformacjeOPliku(
 //				"files/tableCOCACOLA_NYSE.csv", "CocaCola", "NYSE");
-//		tablicaInformacjioPlikach[2] = this.new InformacjeOPliku(
-//				"files/tableDISNEY_NYSE.csv", "Disney", "NYSE");
+		tablicaInformacjioPlikach[0] = this.new InformacjeOPliku(
+				"files/tableDISNEY_NYSE.csv", "Disney", "NYSE");
 //		tablicaInformacjioPlikach[3] = this.new InformacjeOPliku(
 //				"files/tableFORD_NYSE.csv", "Ford", "NYSE");
 //		tablicaInformacjioPlikach[4] = this.new InformacjeOPliku(
@@ -51,10 +51,10 @@ public class InputStream {
 //				"files/tableMICROSOFT_NASDAQ.csv", "Microsoft", "NASDAQ");
 //		tablicaInformacjioPlikach[9] = this.new InformacjeOPliku(
 //				"files/tableORACLE_NASDAQ.csv", "Oracle", "NASDAQ");
-//		tablicaInformacjioPlikach[10] = this.new InformacjeOPliku(
+//		tablicaInformacjioPlikach[0] = this.new InformacjeOPliku(
 //				"files/tablePEPSICO_NYSE.csv", "PepsiCo", "NYSE");
-		tablicaInformacjioPlikach[0] = this.new InformacjeOPliku(
-				"files/tableYAHOO_NASDAQ.csv", "Yahoo", "NASDAQ");
+//		tablicaInformacjioPlikach[0] = this.new InformacjeOPliku(
+//				"files/tableYAHOO_NASDAQ.csv", "Yahoo", "NASDAQ");
 
 		ReverseLineReader readers[] = new ReverseLineReader[LICZBA_PLIKOW];
 

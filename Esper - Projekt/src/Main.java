@@ -83,12 +83,11 @@ public class Main {
 
         administrator.createEPL("create window MD.std:unique(spolka) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
-        "insert into MD (spolka, wartosc, data) " +
-                "select smatp.spolka, cast( avg(Math.abs(smatp.wartosc - tptab.wartosc)), float), smatp.data " +
-                "from SMATP as smatp unidirectional " +
-                "join TPtab as tptab on smatp.spolka = tptab.spolka " +
-                "group by smatp.spolka, smatp.data"
-
+                "insert into MD (spolka, wartosc, data) " +
+                        "select smatp.spolka, cast( avg(Math.abs(smatp.wartosc - tptab.wartosc)), float), smatp.data " +
+                        "from SMATP as smatp unidirectional " +
+                        "join TPtab as tptab on smatp.spolka = tptab.spolka " +
+                        "group by smatp.spolka, smatp.data"
 
 
 //                "insert into MD(spolka, wartosc, data) " +
@@ -143,23 +142,25 @@ public class Main {
         administrator.createEPL("create window kup.win:length(1) (spolka String, data Date, operacja char)");
         administrator.createEPL(
                 "insert into kup(spolka, data, operacja) " +
-                        "select distinct  maxB.spolka, maxB.data, cast('-',char) " +
+                        "select distinct  maxB.spolka, maxA.data, cast('-',char) " +
                         "from localMax as maxA unidirectional " +
                         "join localMax as maxB on maxA.spolka = maxB.spolka " +
                         "join CCI as cciA on cciA.spolka = maxA.spolka and cciA.data = maxA.data " +
                         "join CCI as cciB on cciB.spolka = maxB.spolka and cciB.data = maxB.data " +
-                        "where maxA.wartosc < maxB.wartosc " +
-                        "and cciA.wartosc > cciB.wartosc "
+                        "where maxA.wartosc > maxB.wartosc " +
+                        "and cciA.wartosc < cciB.wartosc " +
+                        "and maxB.data.before(maxA.data) "
         );
         administrator.createEPL(
                 "insert into kup(spolka, data, operacja) " +
-                        "select distinct  minB.spolka, minB.data, cast('+',char) " +
+                        "select distinct  minB.spolka, minA.data, cast('+',char) " +
                         "from localMin as minA unidirectional " +
                         "join localMin as minB on minA.spolka = minB.spolka " +
                         "join CCI as cciA on cciA.spolka = minA.spolka and cciA.data = minA.data " +
                         "join CCI as cciB on cciB.spolka = minB.spolka and cciB.data = minB.data " +
                         "where minA.wartosc < minB.wartosc " +
-                        "and cciA.wartosc > cciB.wartosc "
+                        "and cciA.wartosc > cciB.wartosc " +
+                        "and minB.data.before(minA.data) "
         );
 
         administrator.createEPL("create window kupKurs.win:length(1) (spolka String, data Date, operacja char, kurs Float)");
@@ -177,7 +178,8 @@ public class Main {
                         "where k.spolka = p.spolka " +
                         "when matched then " +
                         "   update set p.liczba_akcji = p.liczba_akcji + cast(p.suma_gotowki/k.kurs, int)," +
-                        "   p.suma_gotowki = p.suma_gotowki - cast((cast(p.suma_gotowki/k.kurs, int))*k.kurs, float) " +
+                        "   p.suma_gotowki = p.suma_gotowki - cast((cast(p.suma_gotowki/k.kurs, int))*k.kurs, float), " +
+                        "   p.data = k.data " +
                         "when not matched then " +
                         "   insert into portfel(spolka, data, liczba_akcji, suma_gotowki) " +
                         "       select k.spolka, k.data, cast(kasaNaStart/k.kurs, int), cast(kasaNaStart % k.kurs, float)"
@@ -190,7 +192,8 @@ public class Main {
                         "when matched then " +
                         "   update set " +
                         "   p.suma_gotowki = p.suma_gotowki + cast(p.liczba_akcji*k.kurs, float)," +
-                        "   p.liczba_akcji = 0  "
+                        "   p.liczba_akcji = 0," +
+                        "   p.data = k.data  "
         );
 
 
@@ -207,12 +210,23 @@ public class Main {
         EPStatement statement = administrator.createEPL(
                 "select ka.data, ka.spolka, ka.kursZamkniecia, k.suma_gotowki, k.liczba_akcji, (ka.kursZamkniecia*k.liczba_akcji+k.suma_gotowki) as SUMA " +
                         "from KursAkcji(Main.sprawdz(data, 2010, 11, 31)) as ka unidirectional " +
-                        "join portfel as k on k.spolka = ka.spolka"
+                        "join portfel as k on k.spolka = ka.spolka and k.data = ka.data"
+
+//                    "select * from kup()"
         );
 
 
         ProstyListener listener = new ProstyListener();
         statement.addListener(listener);
+
+//        EPStatement statement2 = administrator.createEPL(
+////                "select istream  p.data, p.liczba_akcji, p.suma_gotowki, ka.data from portfel as p, KursAkcji().win:length(1) as ka"
+//                "select k.*, ka.data, ka.kursZamkniecia from kup() as k unidirectional, KursAkcji.win:length(1) as ka"
+//        );
+//
+//
+//        ProstyListener listener2 = new ProstyListener();
+//        statement2.addListener(listener2);
 
         InputStream inputStream = new InputStream();
         inputStream.generuj(serviceProvider);
