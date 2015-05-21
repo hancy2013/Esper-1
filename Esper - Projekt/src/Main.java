@@ -236,6 +236,6 @@ public class Main {
     public static boolean sprawdz(Date date, int y, int m, int d) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        return cal.get(Calendar.DAY_OF_MONTH)==d; // && cal.get(Calendar.YEAR)==y && cal.get(Calendar.MONTH)==m;
+        return cal.get(Calendar.DAY_OF_MONTH)==d && cal.get(Calendar.YEAR)==y && cal.get(Calendar.MONTH)==m;
     }
 }
