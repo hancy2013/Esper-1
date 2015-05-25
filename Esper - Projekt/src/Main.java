@@ -23,31 +23,6 @@ public class Main {
         administrator.createEPL("create variable int okres = 14");
         administrator.createEPL("create variable int kasaNaStart = 1000");
 
-
-//        administrator.createEPL("create window High.std:unique(spolka) (spolka String, wartosc Float)");
-//        administrator.createEPL(
-//                "insert into High(spolka, wartosc) " +
-//                        "select ka.spolka, max(ka.kursZamkniecia) " +
-//                        "from KursAkcji.win:ext_timed(data.getTime(), okres days) as ka "
-//        );
-//
-//        administrator.createEPL("create window Low.std:unique(spolka) (spolka String, wartosc Float)");
-//        administrator.createEPL(
-//                "insert into Low(spolka, wartosc) " +
-//                        "select ka.spolka, min(ka.kursZamkniecia) " +
-//                        "from KursAkcji.win:ext_timed(data.getTime(), okres days) as ka "
-//        );
-//
-//        administrator.createEPL("create window TP.win:length(okres) as KursData");
-//        administrator.createEPL(
-//                "insert into TP(spolka, kurs, data) " +
-//                        "select ka.spolka, cast( (ka.kursZamkniecia " +
-//                        "                       +(select wartosc from High as h where ka.spolka = h.spolka) " +
-//                        "                       +(select wartosc from Low as l where ka.spolka = l.spolka) " +
-//                        "                           )/3, float), ka.data " +
-//                        "from KursAkcji.win:length(1) as ka"
-//        );
-
         administrator.createEPL("create window TPtab.std:groupwin(spolka).win:length(okres)  (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into TPtab(spolka, wartosc, data) " +
@@ -70,17 +45,6 @@ public class Main {
                         "from TPtab"
         );
 
-//        administrator.createEPL("create window MDpom.std:unique(spolka).win:ext_timed(data.getTime(), 1 days) (spolka String, wartosc Float, data Date)");
-//        administrator.createEPL(
-//                "on SMATP as smatp " +
-//                        "merge TPtab as tp " +
-//                        "where smatp.spolka = tp.spolka " +
-//                        "when matched then " +
-//                        "   insert into MDpom(spolka, wartosc, data) " +
-//                        "       select smatp.spolka, Math.abs(smatp.wartosc - tp.wartosc), smatp.data"
-//
-//        );
-
         administrator.createEPL("create window MD.std:unique(spolka) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into MD (spolka, wartosc, data) " +
@@ -88,11 +52,6 @@ public class Main {
                         "from SMATP as smatp unidirectional " +
                         "join TPtab as tptab on smatp.spolka = tptab.spolka " +
                         "group by smatp.spolka, smatp.data"
-
-
-//                "insert into MD(spolka, wartosc, data) " +
-//                        "select spolka, cast(avg(wartosc), float), data " +
-//                        "from MDpom"
         );
 
         //TODO może dodatkowo długościowe lub czasowe na CCI
@@ -166,9 +125,9 @@ public class Main {
         administrator.createEPL("create window kupKurs.win:length(1) (spolka String, data Date, operacja char, kurs Float)");
         administrator.createEPL(
                 "insert into kupKurs(spolka, data, operacja, kurs) " +
-                        "select k.spolka, k.data, k.operacja, ka.kursZamkniecia " +
+                        "select k.spolka, ka.data, k.operacja, ka.kursZamkniecia " +
                         "from kup as k " +
-                        "join KursAkcji.win:keepall() as ka on k.spolka = ka.spolka and k.data = ka.data"
+                        "join KursAkcji.std:unique(spolka) as ka on k.spolka = ka.spolka"
         );
 
         administrator.createEPL("create window portfel.std:unique(spolka) (spolka String, data Date, liczba_akcji Integer, suma_gotowki float)");
@@ -219,14 +178,6 @@ public class Main {
         ProstyListener listener = new ProstyListener();
         statement.addListener(listener);
 
-//        EPStatement statement2 = administrator.createEPL(
-////                "select istream  p.data, p.liczba_akcji, p.suma_gotowki, ka.data from portfel as p, KursAkcji().win:length(1) as ka"
-//                "select k.*, ka.data, ka.kursZamkniecia from kup() as k unidirectional, KursAkcji.win:length(1) as ka"
-//        );
-//
-//
-//        ProstyListener listener2 = new ProstyListener();
-//        statement2.addListener(listener2);
 
         InputStream inputStream = new InputStream();
         inputStream.generuj(serviceProvider);
