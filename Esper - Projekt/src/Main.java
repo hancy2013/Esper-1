@@ -54,8 +54,7 @@ public class Main {
                         "group by smatp.spolka, smatp.data"
         );
 
-        //TODO może dodatkowo długościowe lub czasowe na CCI
-        administrator.createEPL("create window CCI.std:groupwin(spolka).win:length(30) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL("create window CCI.std:groupwin(spolka).win:length(3) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
                 "insert into CCI(spolka, wartosc, data) " +
                         "select md.spolka, cast((tp.wartosc - smatp.wartosc)/(0.015 * md.wartosc), float), md.data " +
@@ -71,9 +70,9 @@ public class Main {
                         "from KursAkcji.win:length(1) as ka "
         );
 
-        administrator.createEPL("create window localMax.std:groupwin(spolka).win:length(2) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL("create window kursMax.std:groupwin(spolka).win:length(2) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
-                "insert into localMax(spolka, wartosc, data) " +
+                "insert into kursMax(spolka, wartosc, data) " +
                         "select  b.spolka, b.wartosc, b.data " +
                         "from lastThree as a " +
                         "join lastThree as b on a.spolka = b.spolka " +
@@ -84,42 +83,69 @@ public class Main {
                         "and c.wartosc <= b.wartosc"
         );
 
-        administrator.createEPL("create window localMin.std:groupwin(spolka).win:length(2) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL("create window kursMin.std:groupwin(spolka).win:length(2) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
-                "insert into localMin(spolka, wartosc, data) " +
+                "insert into kursMin(spolka, wartosc, data) " +
                         "select  b.spolka, b.wartosc, b.data " +
                         "from lastThree as a " +
                         "join lastThree as b on a.spolka = b.spolka " +
                         "join lastThree as c on a.spolka = c.spolka " +
                         "where a.data.before(b.data) " +
                         "and b.data.before(c.data) " +
-                        "and a.wartosc >= b.wartosc " +
-                        "and c.wartosc > b.wartosc"
+                        "and a.wartosc > b.wartosc " +
+                        "and c.wartosc >= b.wartosc"
         );
 
-        //TODO jak wywalimy distinct to się generuje milion wpisów
-        administrator.createEPL("create window kup.win:length(1) (spolka String, data Date, operacja char)");
+        administrator.createEPL("create window CCIMax.std:groupwin(spolka).win:length(2) (spolka String, wartosc Float, data Date)");
         administrator.createEPL(
-                "insert into kup(spolka, data, operacja) " +
-                        "select distinct  maxB.spolka, maxA.data, cast('-',char) " +
-                        "from localMax as maxA unidirectional " +
-                        "join localMax as maxB on maxA.spolka = maxB.spolka " +
-                        "join CCI as cciA on cciA.spolka = maxA.spolka and cciA.data = maxA.data " +
-                        "join CCI as cciB on cciB.spolka = maxB.spolka and cciB.data = maxB.data " +
-                        "where maxA.wartosc > maxB.wartosc " +
-                        "and cciA.wartosc < cciB.wartosc " +
-                        "and maxB.data.before(maxA.data) "
+                "insert into CCIMax(spolka, wartosc, data) " +
+                        "select  b.spolka, b.wartosc, b.data " +
+                        "from CCI as a " +
+                        "join CCI as b on a.spolka = b.spolka " +
+                        "join CCI as c on a.spolka = c.spolka " +
+                        "where a.data.before(b.data) " +
+                        "and b.data.before(c.data) " +
+                        "and a.wartosc < b.wartosc " +
+                        "and c.wartosc <= b.wartosc"
+        );
+
+        administrator.createEPL("create window CCIMin.std:groupwin(spolka).win:length(2) (spolka String, wartosc Float, data Date)");
+        administrator.createEPL(
+                "insert into CCIMin(spolka, wartosc, data) " +
+                        "select  b.spolka, b.wartosc, b.data " +
+                        "from CCI as a " +
+                        "join CCI as b on a.spolka = b.spolka " +
+                        "join CCI as c on a.spolka = c.spolka " +
+                        "where a.data.before(b.data) " +
+                        "and b.data.before(c.data) " +
+                        "and a.wartosc > b.wartosc " +
+                        "and c.wartosc >= b.wartosc"
+        );
+
+        administrator.createEPL("create window kup.win:length(1) (spolka String, operacja char)");
+        administrator.createEPL(
+                "insert into kup(spolka, operacja) " +
+                        "select distinct  cciA.spolka, cast('-',char) " +
+                        "from CCIMax as cciB unidirectional " +
+                        "join CCIMax as cciA on cciB.spolka = cciA.spolka " +
+                        "join kursMax as kursA on kursA.spolka = cciA.spolka " +
+                        "join kursMax as kursB on kursB.spolka = cciA.spolka " +
+                        "where cciA.data.before(cciB.data) " +
+                        "and kursA.data.before(kursB.data) " +
+                        "and cciA.wartosc > cciB.wartosc " +
+                        "and kursA.wartosc < kursB.wartosc"
         );
         administrator.createEPL(
-                "insert into kup(spolka, data, operacja) " +
-                        "select distinct  minB.spolka, minA.data, cast('+',char) " +
-                        "from localMin as minA unidirectional " +
-                        "join localMin as minB on minA.spolka = minB.spolka " +
-                        "join CCI as cciA on cciA.spolka = minA.spolka and cciA.data = minA.data " +
-                        "join CCI as cciB on cciB.spolka = minB.spolka and cciB.data = minB.data " +
-                        "where minA.wartosc < minB.wartosc " +
-                        "and cciA.wartosc > cciB.wartosc " +
-                        "and minB.data.before(minA.data) "
+                "insert into kup(spolka, operacja) " +
+                        "select distinct  cciA.spolka, cast('+',char) " +
+                        "from CCIMin as cciB unidirectional " +
+                        "join CCIMin as cciA on cciB.spolka = cciA.spolka " +
+                        "join kursMin as kursA on kursA.spolka = cciA.spolka " +
+                        "join kursMin as kursB on kursB.spolka = cciA.spolka " +
+                        "where cciA.data.before(cciB.data) " +
+                        "and kursA.data.before(kursB.data) " +
+                        "and cciA.wartosc < cciB.wartosc " +
+                        "and kursA.wartosc > kursB.wartosc"
         );
 
         administrator.createEPL("create window kupKurs.win:length(1) (spolka String, data Date, operacja char, kurs Float)");
@@ -161,17 +187,11 @@ public class Main {
 //                        "from kup"
 //        );
 
-//        EPStatement statement = administrator.createEPL(
-//                "select k.spolka, k.data, k.suma_gotowki, k.liczba_akcji " +
-//                        "from portfel as k"
-//        );
-
         EPStatement statement = administrator.createEPL(
                 "select ka.data, ka.spolka, ka.kursZamkniecia, k.suma_gotowki, k.liczba_akcji, (ka.kursZamkniecia*k.liczba_akcji+k.suma_gotowki) as SUMA " +
                         "from KursAkcji(Main.sprawdz(data, 2010, 11, 31)) as ka unidirectional " +
                         "join portfel as k on k.spolka = ka.spolka and k.data = ka.data"
 
-//                    "select * from kup()"
         );
 
 
